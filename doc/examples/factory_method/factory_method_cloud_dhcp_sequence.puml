@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+participant DHCPAgent
+participant APIServer
+
+...
+
+DHCPAgent -> APIServer: ListNodeNetworkBindings
+DHCPAgent <-- APIServer: nnbs for different configuration types (route, ovs, ...)
+
+loop for each nnb
+alt nnb_type == route
+ alt network_type == ipv4
+    DHCPAgent -> DHCPAgent: factoryIPv4.CreateNetwork \n(Create socket and start listen ipv4 interface for DHCP requests)
+    else if network_type == ipv6
+    DHCPAgent -> DHCPAgent: factoryIPv6.CreateNetwork \n(Create socket and start listen ipv6 interface for DHCP requests)
+ end alt
+else if nnb_type == ovs
+ alt network_type == ipv4
+    DHCPAgent -> DHCPAgent: factoryTunTapV4.CreateNetwork \n(Create socket and start listen ipv4 tuptap interface for DHCP requests)
+ else if network_type == ipv6
+    DHCPAgent -> DHCPAgent: factoryTunTapV4.CreateNetwork \n(Create socket and start listen ipv6 tuptap interface for DHCP requests)
+end alt
+end loop
+
+...
+@enduml

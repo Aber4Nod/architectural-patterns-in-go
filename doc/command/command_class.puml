@@ -1,0 +1,56 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+interface DeliveryService {
+	+RequestMenus()
+	+MakeOrder(restaurantName: string, dish: string)
+}
+
+class deliveryService {
+    - restaurants: map[string]restaurant
+    +RequestMenus()
+    +MakeOrder(restaurantName: string, dish: string)
+}
+
+class deliveryService implements DeliveryService
+
+deliveryService "1" o--> "*" Receiver
+
+
+interface Receiver {
+    + GiveMenu()
+    + CookOrder(dish: string)
+}
+
+class restaurant {
+    - name
+    + GiveMenu()
+    + CookOrder(dish: string)
+}
+
+class restaurant implements Receiver
+
+
+interface Command {
+	+ Execute()
+}
+
+class makeOrder {
+	- restaurant: restaurant
+	- dish: string
+	+ Execute()
+}
+
+class requestMenu {
+	- restaurant: restaurant
+	+ Execute()
+}
+
+class makeOrder implements Command
+class requestMenu implements Command
+
+Receiver "*" <-- "*" makeOrder : transfers call
+Receiver "*" <-- "*"  requestMenu: transfers call
+
+@enduml

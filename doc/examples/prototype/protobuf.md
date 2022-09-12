@@ -1,0 +1,1 @@
+Example of protobuf message cloning: https://github.com/gogo/protobuf/blob/master/proto/clone.go#L45

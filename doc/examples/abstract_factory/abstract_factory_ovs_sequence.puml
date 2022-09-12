@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+'type OVS interface {
+'	VSCtl() VSCtl
+'	OFCtl() OFCtl
+'}
+
+'type VSCtl interface {
+'	CreateBridge(bridgeName string) (Bridge, error)
+'	GetInterface(interfaceName string) (Interface, error)
+'}
+
+'type Bridge interface {
+'...
+'}
+
+'type Interface interface {
+'...
+'}
+
+participant BringNetworksAction
+participant OVSLibWrapper
+
+...
+
+'getting vsctl object to perform wrapped ovs-vsctl commands
+BringNetworksAction -> OVSLibWrapper: ovs.VSCtl()
+BringNetworksAction <-- OVSLibWrapper: VSCtl object
+
+BringNetworksAction -> OVSLibWrapper: VSCtl.CreateBridge()
+BringNetworksAction <-- OVSLibWrapper: Bridge object
+
+BringNetworksAction -> OVSLibWrapper: Bridge.Info()
+BringNetworksAction <-- OVSLibWrapper: BridgeInfo{Name: ..., ...}
+
+...
+@enduml

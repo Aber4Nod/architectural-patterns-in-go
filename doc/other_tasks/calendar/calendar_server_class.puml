@@ -1,0 +1,122 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+' Interfaces
+interface Service {
+	+CreateEvent(ctx context.Context, data types.EventHandlerData) : (types.Event, error)
+	+UpdateEvent(ctx context.Context, data types.UpdateEventHandlerData) : (types.Event, error)
+	+DeleteEvent(ctx context.Context, data types.EventHandlerData) : error
+	+EventsForPeriod(ctx context.Context, data types.DateIntervalHandlerData) : ([]types.Event, error)
+}
+
+interface Handler {
+	+ServeHTTP(w ResponseWriter, r *Request)
+}
+
+interface CreateEventTransport  {
+	+DecodeRequest(r *http.Request) : (types.EventHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter, event types.Event) : error
+}
+
+interface UpdateEventTransport  {
+	+DecodeRequest(r *http.Request) : (types.EventHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter, event types.Event) : error
+}
+
+interface DeleteEventTransport  {
+	+DecodeRequest(r *http.Request) : (types.EventHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter) : error
+}
+
+interface EventsForPeriodTransport  {
+	+DecodeRequest(r *http.Request) : (types.DateIntervalHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter, events []types.Event) : error
+}
+
+interface ErrorTransport {
+    +EncodeError(w http.ResponseWriter, error, statusCode int)
+}
+
+
+' Classes
+
+class calendar {
+    -events: map[int]map[string]types.Event
+    +CreateEvent(ctx context.Context, data types.EventHandlerData) : (types.Event, error)
+    +UpdateEvent(ctx context.Context, data types.UpdateEventHandlerData) : (types.Event, error)
+    +DeleteEvent(ctx context.Context, data types.EventHandlerData) : error
+    +EventsForPeriod(ctx context.Context, data types.DateIntervalHandlerData) : ([]types.Event, error)
+}
+
+
+class eventServer {
+	-createEventTransport: CreateEventTransport
+	-updateEventTransport: UpdateEventTransport
+    -deleteEventTransport: DeleteEventTransport
+	-calendar: Service
+	-errorTransport: ErrorTransport
+    +ServeHTTP(w ResponseWriter, r *Request)
+}
+
+class eventsForPeriodServer {
+    -transport: EventsForPeriodTransport
+    -calendar: Service
+    -errorTransport: ErrorTransport
+    +ServeHTTP(w ResponseWriter, r *Request)
+}
+
+class createEventTransport  {
+    -dateFormat string
+	+DecodeRequest(r *http.Request) : (types.EventHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter, event types.Event) : error
+}
+
+class updateEventTransport  {
+    -dateFormat string
+	+DecodeRequest(r *http.Request) : (types.EventHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter, event types.Event) : error
+}
+
+class deleteEventTransport  {
+    -dateFormat string
+	+DecodeRequest(r *http.Request) : (types.EventHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter) : error
+}
+
+class eventsForPeriodTransport  {
+    -dateFormat string
+	+DecodeRequest(r *http.Request) : (types.DateIntervalHandlerData, error)
+	+EncodeResponse(w http.ResponseWriter, events []types.Event) : error
+}
+
+class errorTransport {
+    +EncodeError(w http.ResponseWriter, error, statusCode int)
+}
+
+
+' Connections
+class calendar implements Service
+
+class eventServer implements Handler
+class eventsForPeriodServer implements Handler
+
+class createEventTransport implements CreateEventTransport
+class updateEventTransport implements UpdateEventTransport
+class deleteEventTransport implements DeleteEventTransport
+class eventsForPeriodTransport implements EventsForPeriodTransport
+class errorTransport implements ErrorTransport
+
+
+eventServer o---> Service
+eventsForPeriodServer o---> Service
+
+
+eventServer o--> CreateEventTransport
+eventServer o--> UpdateEventTransport
+eventServer o--> DeleteEventTransport
+eventsForPeriodServer o--> EventsForPeriodTransport
+
+eventServer o--> ErrorTransport
+eventsForPeriodServer o--> ErrorTransport
+
+@enduml
